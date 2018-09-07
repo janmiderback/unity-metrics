@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 // Include the namespace required to use Unity UI
 using UnityEngine.UI;
 
 using System.Collections;
-using unitylib;
+using MetricsLib;
 
 public class PlayerController : MonoBehaviour {
 	
@@ -20,8 +21,10 @@ public class PlayerController : MonoBehaviour {
 	// At the start of the game..
 	void Start ()
 	{
-		// Assign the Rigidbody component to our private rb variable
-		rb = GetComponent<Rigidbody>();
+        Server.Start();
+        
+        // Assign the Rigidbody component to our private rb variable
+        rb = GetComponent<Rigidbody>();
 
 		// Set the count to zero 
 		count = 0;
@@ -31,6 +34,13 @@ public class PlayerController : MonoBehaviour {
 
 		// Set the text property of our Win Text UI to an empty string, making the 'You Win' (game over message) blank
 		winText.text = "";
+
+	    Server.NewGame();
+	    Server.SetPoints(count);
+        Server.SetPos(rb.position.x, rb.position.y);
+	    var x2Vel = rb.velocity.x * rb.velocity.x;
+        var y2Vel = rb.velocity.y * rb.velocity.y;
+        Server.SetSpeed(Math.Sqrt(x2Vel + y2Vel));
 	}
 
 	// Each physics step..
@@ -46,7 +56,12 @@ public class PlayerController : MonoBehaviour {
 		// Add a physical force to our Player rigidbody using our 'movement' Vector3 above, 
 		// multiplying it by 'speed' - our public player speed that appears in the inspector
 		rb.AddForce (movement * speed);
-	}
+
+        Server.SetPos(rb.position.x, rb.position.y);
+	    var x2Vel = rb.velocity.x * rb.velocity.x;
+	    var y2Vel = rb.velocity.y * rb.velocity.y;
+	    Server.SetSpeed(Math.Sqrt(x2Vel + y2Vel));
+    }
 
 	// When this game object intersects a collider with 'is trigger' checked, 
 	// store a reference to that collider in a variable named 'other'..
@@ -60,9 +75,10 @@ public class PlayerController : MonoBehaviour {
 
 			// Add one to the score variable 'count'
 			count = count + 1;
+		    Server.SetPoints(count);
 
-			// Run the 'SetCountText()' function (see below)
-			SetCountText ();
+            // Run the 'SetCountText()' function (see below)
+            SetCountText();            
 		}
 	}
 
@@ -76,9 +92,7 @@ public class PlayerController : MonoBehaviour {
 		if (count >= 12) 
 		{
 			// Set the text value of our 'winText'
-			//winText.text = "You Win!";
-            var obj = new unitylib.MyClass();
-		    winText.text = obj.GetString();
-		}
+			winText.text = "You Win!";
+	    }
 	}
 }
